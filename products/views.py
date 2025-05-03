@@ -39,8 +39,8 @@ def product_detail(request, product_slug):
 
     context = {
         "product": product,
-        "rating_counts": rating_counts,
-        "rating_percentages": rating_percentages,
-        "reviews": reviews,
+        "rating_counts": 0,
+        "rating_percentages": 0,
+        "reviews": 0,
     }
     return render(request, "products/product-left-thumbnail.html", context)
