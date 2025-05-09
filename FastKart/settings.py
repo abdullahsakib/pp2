@@ -66,6 +66,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "FastKart.urls"
 
+DELIVERY_CHARGE=10
 import os 
 
 TEMPLATES = [

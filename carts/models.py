@@ -13,6 +13,7 @@ class Cart(TimeStampedModel):
 
 
 class CartItem(TimeStampedModel):
+    user = models.ForeignKey(CustomUser, null=True, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING, null=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField(default=0)
