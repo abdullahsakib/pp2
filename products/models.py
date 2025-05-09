@@ -119,4 +119,4 @@ class Review(TimeStampedModel):
     status = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Review by {self.user.username} for {self.product.name}"
+        return f"Review by {self.user.first_name} for {self.product.name}"
