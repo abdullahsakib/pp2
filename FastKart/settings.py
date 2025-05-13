@@ -186,3 +186,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.CustomUser"
+
+
+SSLCOMMERZ_IS_SANDBOX=True
+SSLCOMMERZ_STORE_ID="alsal681df9d4ec806"
+SSLCOMMERZ_STORE_PASS="alsal681df9d4ec806@ssl"

@@ -17,20 +17,23 @@ from .models import Order, OrderProduct, Payment
 from .utils import send_order_confirmation_email
 
 
-@csrf_exempt
-@login_required
+
+
+
 def place_order(
     request,
     total=0,
     quantity=0,
 ):
-    current_user = request.user
+    
+    if request.user.is_authenticated:
+        cart = get_object_or_404(Cart, user=request.user)
+    else:
+        cart = get_object_or_404(Cart, session_key=get_session_key(request))
 
-    cart = get_object_or_404(Cart, session_key=get_session_key(request))
     cart_items = CartItem.objects.filter(cart=cart).select_related("product")
-    cart_count = cart_items.count()
-    if cart_count <= 0:
-        return redirect("home")
+
+    current_user = request.user
 
     grand_total = 0
     total = 0
@@ -38,8 +41,13 @@ def place_order(
         total += cart_item.product.price * cart_item.quantity
         quantity += cart_item.quantity
     grand_total = float(total) + settings.DELIVERY_CHARGE
-
+    
+    cart_count = cart_items.count()
+    if cart_items.count() == 0:
+        return redirect("home")
+    
     if request.method == "POST":
+
         payment_option = request.POST.get("flexRadioDefault", "cash")  # sslcommercez
 
         try:
@@ -48,9 +56,9 @@ def place_order(
 
             order = Order.objects.create(
                 user=current_user,
-                mobile=current_user.mobile,
+                # mobile=current_user.mobile,
                 email=current_user.email,
-                address_line_1=current_user.address_line_1,
+                # address_line_1=current_user.address_line_1,
                 address_line_2=current_user.address_line_2,
                 country=current_user.country,
                 postcode=current_user.postcode,
@@ -105,9 +113,9 @@ def place_order(
 @login_required
 def payment(request):
     mypayment = SSLCSession(
-        sslc_is_sandbox=settings.SSLCOMMERZ_IS_SANDBOX,
-        sslc_store_id=settings.SSLCOMMERZ_STORE_ID,
-        sslc_store_pass=settings.SSLCOMMERZ_STORE_PASS,
+        sslc_is_sandbox=True,
+        sslc_store_id="alsal681df9d4ec806",
+        sslc_store_pass="alsal681df9d4ec806@ssl",
     )
 
     status_url = request.build_absolute_uri("sslc/status")
@@ -121,6 +129,7 @@ def payment(request):
 
     user = request.user
     order = Order.objects.filter(user=user, is_ordered=False).last()
+
 
     mypayment.set_product_integration(
         total_amount=Decimal(order.order_total),
@@ -151,7 +160,39 @@ def payment(request):
         country=user.country,
     )
 
+    # mypayment.set_product_integration(
+    #     total_amount=Decimal(order.order_total),
+    #     currency="BDT",
+    #     product_category="clothing",
+    #     product_name="demo-product",
+    #     num_of_item=2,
+    #     shipping_method="YES",
+    #     product_profile="None",
+    # )
+
+    # mypayment.set_customer_info(
+    #     name="sakib",
+    #     email="user.email",
+    #     address1="Dhaka",
+    #     address2="adress",
+    #     city="dhaka",
+    #     postcode="3300",
+    #     country="bd",
+    #     phone="1234",
+    # )
+
+    # mypayment.set_shipping_info(
+    #     shipping_to="user.get_full_name()",
+    #     address="user.full_address()",
+    #     city="user.city",
+    #     postcode="user.postcode",
+    #     country="user.country",
+    # )
+
+    
     response_data = mypayment.init_payment()
+    print(response_data)
+
     return redirect(response_data["GatewayPageURL"])
 
 
@@ -202,3 +243,5 @@ def sslc_complete(request, val_id, tran_id):
         return HttpResponse("Order not found", status=404)
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+
